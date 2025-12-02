@@ -46,8 +46,8 @@
     }
     button {
       margin: 5px;
-      padding: 6px 14px;
-      font-size: 16px;
+      padding: 6px 10px;
+      font-size: 14px;
     }
     #found {
       max-width: 320px;
@@ -77,6 +77,7 @@
 <button id="delete">মুছুন</button>
 <button id="shuffle">ঘোরান</button>
 <button id="enter">এন্টার</button>
+<button id="conjunct">যুক্তাক্ষর</button>
 
 <div id="message"></div>
 
@@ -107,6 +108,8 @@ const puzzle = {
     "আরাম",
     "আমলা",
     "ক্লান্ত"
+    "মকর", 
+     "নরক", 
   ]
 };
 
@@ -120,8 +123,10 @@ const AKAR_TILE = "আ";   // টাইল-এ যা দেখাচ্ছি
 const AKAR_SIGN = "া";   // আসল আ-কার (U+09BE)
 const HALANT   = "্";    // হসন্ত (virama)
 
-// শুধু ন+ত = ন্ত; ক+ল conjunct বন্ধ
+// যুক্তাক্ষরের ম্যাপ – কেবল বাটন চাপলে কাজ করবে
+// ক+ল → ক্ল, ন+ত → ন্ত
 const CONJUNCTS = {
+  "ক+ল": "ক্ল",
   "ন+ত": "ন্ত"
 };
 
@@ -150,46 +155,41 @@ function renderBoard() {
 // --- অক্ষর যোগ ---
 function addLetter(ch) {
   if (ch === AKAR_TILE) {
-    applyAkar();     // আ চাপলে আ-কার বা আ
+    applyAkar();     // আ চাপলে আ-কার বা "আ"
   } else {
-    applyConjunct(ch);   // অন্য সব অক্ষর + যুক্তাক্ষর
+    current += ch;   // অন্য সব অক্ষর সোজা যোগ
   }
   document.getElementById("current").textContent = current;
 }
 
-// আ-কার প্রয়োগ
+// আ-কার প্রয়োগ: ক → কা, ল → লা, ক্ল → ক্লা, ন্ত → ন্তা ...
 function applyAkar() {
   if (!current) {
     // একদম শুরুতে আ → "আ"
     current += AKAR_TILE;
     return;
   }
-
-  // SPECIAL CASE: "কল" + আ → "ক্লা"
-  if (current.endsWith("কল")) {
-    current = current.slice(0, -2) + "ক্লা";
-    return;
-  }
-
-  // নরমাল কেস: শেষ বর্ণে আ-কার
   const lastChar = current[current.length - 1];
   current = current.slice(0, -1) + lastChar + AKAR_SIGN;
 }
 
-// যুক্তাক্ষর: ন+ত = ন্ত
-function applyConjunct(ch) {
-  if (!current) {
-    current += ch;
+// যুক্তাক্ষর বাটন চাপলে – শেষ দুই অক্ষর দেখে যুক্তাক্ষর বানাই
+function applyConjunctButton() {
+  if (current.length < 2) {
+    setMessage("কমপক্ষে দুটো বর্ণের পরে যুক্তাক্ষর লাগবে।");
     return;
   }
 
   const lastChar = current[current.length - 1];
-  const pair = lastChar + "+" + ch;
+  const prevChar = current[current.length - 2];
+  const pair = prevChar + "+" + lastChar;
 
   if (CONJUNCTS[pair]) {
-    current = current.slice(0, -1) + CONJUNCTS[pair];
+    current = current.slice(0, -2) + CONJUNCTS[pair];
+    document.getElementById("current").textContent = current;
+    setMessage("যুক্তাক্ষর লাগলো ✔");
   } else {
-    current += ch;
+    setMessage("এই জায়গায় যুক্তাক্ষর লাগছে না।");
   }
 }
 
@@ -197,6 +197,10 @@ function applyConjunct(ch) {
 function clearCurrent(msg = "") {
   current = "";
   document.getElementById("current").textContent = "";
+  setMessage(msg);
+}
+
+function setMessage(msg) {
   document.getElementById("message").textContent = msg;
 }
 
@@ -228,7 +232,7 @@ function submitWord() {
   if (allowed.has(AKAR_TILE)) {
     allowed.add(AKAR_SIGN); // "া"
   }
-  allowed.add(HALANT); // "্" – যুক্তাক্ষরের ভেতরে থাকে
+  allowed.add(HALANT); // যুক্তাক্ষরের ভেতরে থাকে
 
   for (const ch of w) {
     if (!allowed.has(ch)) {
@@ -264,6 +268,7 @@ document.getElementById("shuffle").onclick = () => {
   renderBoard();
 };
 document.getElementById("enter").onclick = submitWord;
+document.getElementById("conjunct").onclick = applyConjunctButton;
 
 // প্রথমবার বোর্ড রেন্ডার
 renderBoard();
@@ -271,4 +276,3 @@ renderBoard();
 
 </body>
 </html>
-
