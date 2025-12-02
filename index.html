@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>Bangla Spelling Bee</title>
+  <style>
+    body {
+      font-family: "Noto Sans Bengali", system-ui, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .board {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      margin: 40px auto;
+    }
+    .hex {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      line-height: 70px;
+      border-radius: 15px;
+      display: inline-block;
+      background: #eee;
+      font-size: 32px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .center {
+      background: #ffd400;
+      left: 95px; top: 95px;
+    }
+    /* ছয়টা চারপাশের হেক্সের position (আনুমানিক) */
+    .hex.p0 { left: 95px; top: 20px; }
+    .hex.p1 { left: 175px; top: 65px; }
+    .hex.p2 { left: 175px; top: 155px; }
+    .hex.p3 { left: 95px; top: 200px; }
+    .hex.p4 { left: 15px; top: 155px; }
+    .hex.p5 { left: 15px; top: 65px; }
+
+    #current {
+      font-size: 28px;
+      margin: 10px 0;
+      min-height: 32px;
+    }
+    button {
+      margin: 5px;
+      padding: 6px 14px;
+      font-size: 16px;
+    }
+    #found {
+      max-width: 320px;
+      margin: 15px auto;
+      text-align: left;
+      font-size: 16px;
+    }
+  </style>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap">
+</head>
+<body>
+
+<h2>বাংলা Spelling Bee – ডেমো</h2>
+<p>মাঝের অক্ষরটি অবশ্যই ব্যবহার করে কমপক্ষে ৪ অক্ষরের শব্দ বানান।</p>
+
+<div class="board" id="board"></div>
+
+<div id="current"></div>
+<p>স্কোর: <span id="score">0</span></p>
+
+<button id="delete">মুছুন</button>
+<button id="shuffle">ঘুরান</button>
+<button id="enter">এন্টার</button>
+
+<div id="message"></div>
+
+<h3>আপনি যেগুলো পেয়েছেন:</h3>
+<div id="found"></div>
+
+<script>
+const puzzle = {
+  center: "ক",
+  letters: ["আ","ল","ম","র","ত","ন"],
+  validWords: ["কলম","কমলা","কলাম","করতাল","কলরব","কলঙ্ক"]
+};
+
+let current = "";
+let score = 0;
+let found = [];
+
+function renderBoard() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  // center
+  const centerDiv = document.createElement("div");
+  centerDiv.className = "hex center";
+  centerDiv.textContent = puzzle.center;
+  centerDiv.onclick = () => addLetter(puzzle.center);
+  board.appendChild(centerDiv);
+
+  // around
+  puzzle.letters.forEach((ch, i) => {
+    const div = document.createElement("div");
+    div.className = "hex p" + i;
+    div.textContent = ch;
+    div.onclick = () => addLetter(ch);
+    board.appendChild(div);
+  });
+}
+
+function addLetter(ch) {
+  current += ch;
+  document.getElementById("current").textContent = current;
+}
+
+function clearCurrent(msg="") {
+  current = "";
+  document.getElementById("current").textContent = "";
+  document.getElementById("message").textContent = msg;
+}
+
+function scoreWord(w) {
+  if (w.length === 4) return 1;
+  if (w.length === 5) return 2;
+  return w.length;
+}
+
+function submitWord() {
+  const w = current;
+  if (w.length < 4) {
+    clearCurrent("কমপক্ষে ৪ অক্ষর হতে হবে।");
+    return;
+  }
+  if (!w.includes(puzzle.center)) {
+    clearCurrent("মাঝের অক্ষরটি থাকতে হবে!");
+    return;
+  }
+  // শুধু অনুমোদিত অক্ষর?
+  const allowed = new Set([puzzle.center, ...puzzle.letters]);
+  for (const ch of w) {
+    if (!allowed.has(ch)) {
+      clearCurrent("এই অক্ষর ব্যবহার করা যাবে না: " + ch);
+      return;
+    }
+  }
+  if (!puzzle.validWords.includes(w)) {
+    clearCurrent("ডিকশনারিতে এই শব্দ নেই।");
+    return;
+  }
+  if (found.includes(w)) {
+    clearCurrent("আগেই পাওয়া হয়েছে।");
+    return;
+  }
+  found.push(w);
+  score += scoreWord(w);
+  document.getElementById("score").textContent = score;
+  document.getElementById("found").textContent = found.join(", ");
+  clearCurrent("দারুণ! ✔");
+}
+
+document.getElementById("delete").onclick = () => clearCurrent();
+document.getElementById("shuffle").onclick = () => {
+  puzzle.letters.sort(() => Math.random() - 0.5);
+  renderBoard();
+};
+document.getElementById("enter").onclick = submitWord;
+
+renderBoard();
+</script>
+
+</body>
+</html>
