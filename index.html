@@ -63,7 +63,7 @@
 <body>
 
 <h2>বাংলা Spelling Bee – ডেমো</h2>
-<p>মাঝের অক্ষরটি অবশ্যই ব্যবহার করে কমপক্ষে ৪ অক্ষরের শব্দ বানান।</p>
+<p>মাঝের অক্ষরটি অবশ্যই ব্যবহার করে কমপক্ষে ৩ অক্ষরের শব্দ বানান।</p>
 
 <div class="board" id="board"></div>
 
@@ -123,15 +123,15 @@ function clearCurrent(msg="") {
 }
 
 function scoreWord(w) {
-  if (w.length === 4) return 1;
-  if (w.length === 5) return 2;
+  if (w.length === 3) return 1;
+  if (w.length === 4) return 2;
   return w.length;
 }
 
 function submitWord() {
   const w = current;
-  if (w.length < 4) {
-    clearCurrent("কমপক্ষে ৪ অক্ষর হতে হবে।");
+  if (w.length < 3) {
+    clearCurrent("কমপক্ষে ৩ অক্ষর হতে হবে।");
     return;
   }
   if (!w.includes(puzzle.center)) {
