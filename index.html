@@ -96,17 +96,17 @@ const puzzle = {
     "কালা",
     "কাম",
     "রকম",
-    "কলা", 
-    "কান", 
-    "রাম", 
-    "তান", 
-    "রাত", 
+    "কলা",
+    "কান",
+    "রাম",
+    "তান",
+    "রাত",
     "রতন",
-    "লতা", 
+    "লতা",
     "মরাল",
-    "আরাম", 
-    "আমলা" 
-    "ক্লান্ত"
+    "আরাম",
+    "আমলা",
+    "ক্লান্ত"   // যুক্তাক্ষর সহ
   ]
 };
 
@@ -115,9 +115,16 @@ let current = "";
 let score = 0;
 let found = [];
 
-// আ-কার লজিক
-const AKAR_TILE = "আ";   // বাটনে যা লেখা
+// আ-কার ও যুক্তাক্ষর লজিক
+const AKAR_TILE = "আ";   // টাইল-এ যা দেখাচ্ছি
 const AKAR_SIGN = "া";   // আসল আ-কার (U+09BE)
+const HALANT   = "্";    // হসন্ত (virama), যুক্তাক্ষরে থাকে
+
+// যুক্তাক্ষরের ম্যাপ: ক+ল = ক্ল, ন+ত = ন্ত
+const CONJUNCTS = {
+  "ক+ল": "ক্ল",
+  "ন+ত": "ন্ত"
+};
 
 // --- বোর্ড আঁকা ---
 function renderBoard() {
@@ -141,17 +148,19 @@ function renderBoard() {
   });
 }
 
-// --- আ/অক্ষর যোগ করার লজিক ---
+// --- অক্ষর যোগ করার লজিক ---
 function addLetter(ch) {
   if (ch === AKAR_TILE) {
-    applyAkar();     // আ চাপলে আগের বর্ণে আ-কার বসাই
+    // আ চাপলে – আ-কার বসবে বা শুরুতে আ হবে
+    applyAkar();
   } else {
-    current += ch;   // অন্য সব অক্ষর সরাসরি যোগ
+    // অন্য বর্ণে আগে দেখব যুক্তাক্ষর হবে কি না
+    applyConjunct(ch);
   }
   document.getElementById("current").textContent = current;
 }
 
-// আ-কার প্রয়োগ: ল → লা, ত → তা, ন → না ইত্যাদি
+// আ-কার প্রয়োগ: ক → কা, ল → লা, ক্ল → ক্লা, ন্ত → ন্তা …
 function applyAkar() {
   if (!current) {
     // একদম শুরুতে আ চাপলে "আ" ই থাকবে
@@ -159,7 +168,26 @@ function applyAkar() {
     return;
   }
   const lastChar = current[current.length - 1];
+  // শেষ বর্ণটা সরিয়ে তার ওপর আ-কার বসাই
   current = current.slice(0, -1) + lastChar + AKAR_SIGN;
+}
+
+// যুক্তাক্ষর: ক+ল = ক্ল, ন+ত = ন্ত
+function applyConjunct(ch) {
+  if (!current) {
+    current += ch;
+    return;
+  }
+
+  const lastChar = current[current.length - 1];
+  const pair = lastChar + "+" + ch;
+
+  if (CONJUNCTS[pair]) {
+    // শেষ বর্ণ + নতুন বর্ণ = যুক্তাক্ষর
+    current = current.slice(0, -1) + CONJUNCTS[pair];
+  } else {
+    current += ch;
+  }
 }
 
 // --- অন্য হেল্পার ---
@@ -194,10 +222,12 @@ function submitWord() {
 
   // allowed অক্ষর চেক
   const allowed = new Set([puzzle.center, ...puzzle.letters]);
-  // যদি টাইলসে "আ" থাকে, তাহলে "া"-কেও allow করি
+  // "আ" থাকলে "া"-কেও allow করি
   if (allowed.has(AKAR_TILE)) {
     allowed.add(AKAR_SIGN);
   }
+  // যুক্তাক্ষরের জন্য virama (্) allow করি
+  allowed.add(HALANT);
 
   for (const ch of w) {
     if (!allowed.has(ch)) {
@@ -240,4 +270,3 @@ renderBoard();
 
 </body>
 </html>
-
