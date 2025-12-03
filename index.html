@@ -267,29 +267,6 @@ function scoreWord(w) {
   return w.length;
 }
 
-// মোট সম্ভব স্কোর
-const TOTAL_POSSIBLE = puzzle.validWords.reduce(
-  (sum, w) => sum + scoreWord(w), 0
-);
-
-// র‍্যাঙ্ক লেভেল – percentage of TOTAL_POSSIBLE
-const rankLevels = [
-  { name: "Beginner",   pct: 0.00 },
-  { name: "Good Start", pct: 0.05 },
-  { name: "Moving Up",  pct: 0.10 },
-  { name: "Good",       pct: 0.20 },
-  { name: "Solid",      pct: 0.35 },
-  { name: "Nice",       pct: 0.50 },
-  { name: "Great",      pct: 0.65 },
-  { name: "Amazing",    pct: 0.80 },
-  { name: "Genius",     pct: 0.95 }
-];
-
-// প্রতিটির minScore বের করি
-rankLevels.forEach(level => {
-  level.minScore = Math.ceil(TOTAL_POSSIBLE * level.pct);
-});
-
 function getPraiseForScore(s) {
   if (s >= 40) return "অসাধারণ!";
   if (s >= 30) return "চমৎকার!";
@@ -304,13 +281,28 @@ function updatePraise() {
   p.textContent = getPraiseForScore(score);
 }
 
+// মোট সম্ভব স্কোর (শুধু তথ্যের জন্য)
+const TOTAL_POSSIBLE = puzzle.validWords.reduce(
+  (sum, w) => sum + scoreWord(w), 0
+);
+
+// আমাদের বাংলা র‍্যাঙ্ক সিস্টেম (নির্দিষ্ট স্কোরে)
+const rankLevels = [
+  { name: "শুরু",     minScore: 0 },
+  { name: "বাহ্",     minScore: 1 },
+  { name: "খুব ভালো", minScore: 10 },
+  { name: "দারুণ",    minScore: 20 },
+  { name: "চমৎকার",  minScore: 30 },
+  { name: "অসাধারণ", minScore: 40 }
+];
+
 // ---------- র‍্যাঙ্ক মডাল ----------
 function showRankModal() {
   const modal = document.getElementById("rankModal");
   const listEl = document.getElementById("rankList");
   const summaryEl = document.getElementById("rankSummary");
 
-  // বর্তমান র‍্যাঙ্ক বের করি
+  // বর্তমান র‍্যাঙ্ক বের করি (minScore অনুযায়ী)
   let currentRank = rankLevels[0];
   for (const lvl of rankLevels) {
     if (score >= lvl.minScore) currentRank = lvl;
@@ -319,19 +311,19 @@ function showRankModal() {
   const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
 
   // Summary
-  let summary = `এই পাজলে মোট সম্ভব স্কোর ${TOTAL_POSSIBLE}।\n`;
+  let summary = `এই পাজলে মোট সম্ভব স্কোর ${TOTAL_POSSIBLE}। `;
   summary += `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
   if (nextRank) {
     const diff = Math.max(0, nextRank.minScore - score);
-    summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে কমপক্ষে ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
+    summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে ন্যূনতম ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
   } else {
     summary += ` আপনি ইতিমধ্যে সর্বোচ্চ র‍্যাঙ্কে আছেন!`;
   }
   summaryEl.textContent = summary;
 
-  // তালিকা
+  // তালিকা (উপর থেকে নিচে: অসাধারণ → শুরু)
   listEl.innerHTML = "";
-  const desc = [...rankLevels].reverse(); // Genius উপরে
+  const desc = [...rankLevels].reverse();
   desc.forEach(lvl => {
     const li = document.createElement("li");
     li.textContent = `${lvl.name} — ন্যূনতম ${lvl.minScore} পয়েন্ট`;
