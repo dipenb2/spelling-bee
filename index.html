@@ -60,6 +60,49 @@
       margin-top: 6px;
       color: #444444;
     }
+    #scoreLine {
+      cursor: pointer;
+    }
+
+    /* --- Rank modal --- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background: #ffffff;
+      margin: 80px auto;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 360px;
+      text-align: left;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .close {
+      float: right;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #rankList {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+    #rankList li {
+      margin: 4px 0;
+    }
   </style>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap">
@@ -72,7 +115,7 @@
 <div class="board" id="board"></div>
 
 <div id="current"></div>
-<p>স্কোর: <span id="score">0</span></p>
+<p id="scoreLine">স্কোর: <span id="score">0</span></p>
 <p id="praise"></p>
 
 <button id="delete">মুছুন</button>
@@ -85,13 +128,23 @@
 <h3>আপনি যেগুলো পেয়েছেন:</h3>
 <div id="found"></div>
 
+<!-- Rank Modal -->
+<div id="rankModal" class="modal">
+  <div class="modal-content">
+    <span id="rankClose" class="close">&times;</span>
+    <h3>Rankings</h3>
+    <p id="rankSummary"></p>
+    <ul id="rankList"></ul>
+  </div>
+</div>
+
 <script>
 // ---------- পাজল সেটআপ ----------
 const puzzle = {
   center: "ক",
   letters: ["ম","ল","ত","ন","র","আ"],
   validWords: [
-    "কলম", "করাত", "কতল", "নরক", "কমল", "নরক", "রক্ত", 
+    "কলম", "করাত", "কতল", "নরক", "কমল", "নরক", "রক্ত",
     "কমলা",
     "কলতান",
     "করলা",
@@ -100,10 +153,10 @@ const puzzle = {
     "রকম",
     "কলা",
     "কান",
-    "রকম", 
-    "মকর", 
+    "রকম",
+    "মকর",
     "কাল",
-    "কলাম", 
+    "কলাম",
     "রাম",
     "তান",
     "রাত",
@@ -214,6 +267,29 @@ function scoreWord(w) {
   return w.length;
 }
 
+// মোট সম্ভব স্কোর
+const TOTAL_POSSIBLE = puzzle.validWords.reduce(
+  (sum, w) => sum + scoreWord(w), 0
+);
+
+// র‍্যাঙ্ক লেভেল – percentage of TOTAL_POSSIBLE
+const rankLevels = [
+  { name: "Beginner",   pct: 0.00 },
+  { name: "Good Start", pct: 0.05 },
+  { name: "Moving Up",  pct: 0.10 },
+  { name: "Good",       pct: 0.20 },
+  { name: "Solid",      pct: 0.35 },
+  { name: "Nice",       pct: 0.50 },
+  { name: "Great",      pct: 0.65 },
+  { name: "Amazing",    pct: 0.80 },
+  { name: "Genius",     pct: 0.95 }
+];
+
+// প্রতিটির minScore বের করি
+rankLevels.forEach(level => {
+  level.minScore = Math.ceil(TOTAL_POSSIBLE * level.pct);
+});
+
 function getPraiseForScore(s) {
   if (s >= 40) return "অসাধারণ!";
   if (s >= 30) return "চমৎকার!";
@@ -226,6 +302,50 @@ function getPraiseForScore(s) {
 function updatePraise() {
   const p = document.getElementById("praise");
   p.textContent = getPraiseForScore(score);
+}
+
+// ---------- র‍্যাঙ্ক মডাল ----------
+function showRankModal() {
+  const modal = document.getElementById("rankModal");
+  const listEl = document.getElementById("rankList");
+  const summaryEl = document.getElementById("rankSummary");
+
+  // বর্তমান র‍্যাঙ্ক বের করি
+  let currentRank = rankLevels[0];
+  for (const lvl of rankLevels) {
+    if (score >= lvl.minScore) currentRank = lvl;
+  }
+  const idx = rankLevels.indexOf(currentRank);
+  const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
+
+  // Summary
+  let summary = `এই পাজলে মোট সম্ভব স্কোর ${TOTAL_POSSIBLE}।\n`;
+  summary += `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
+  if (nextRank) {
+    const diff = Math.max(0, nextRank.minScore - score);
+    summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে কমপক্ষে ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
+  } else {
+    summary += ` আপনি ইতিমধ্যে সর্বোচ্চ র‍্যাঙ্কে আছেন!`;
+  }
+  summaryEl.textContent = summary;
+
+  // তালিকা
+  listEl.innerHTML = "";
+  const desc = [...rankLevels].reverse(); // Genius উপরে
+  desc.forEach(lvl => {
+    const li = document.createElement("li");
+    li.textContent = `${lvl.name} — ন্যূনতম ${lvl.minScore} পয়েন্ট`;
+    if (lvl.name === currentRank.name) {
+      li.style.fontWeight = "bold";
+    }
+    listEl.appendChild(li);
+  });
+
+  modal.style.display = "block";
+}
+
+function hideRankModal() {
+  document.getElementById("rankModal").style.display = "none";
 }
 
 // ---------- সাবমিট ----------
@@ -284,6 +404,14 @@ document.getElementById("shuffle").onclick = () => {
 };
 document.getElementById("enter").onclick = submitWord;
 document.getElementById("conjunct").onclick = applyConjunctButton;
+
+// স্কোর লাইনে ক্লিক করলে র‍্যাঙ্ক মডাল
+document.getElementById("scoreLine").onclick = showRankModal;
+document.getElementById("rankClose").onclick = hideRankModal;
+window.onclick = function(e) {
+  const modal = document.getElementById("rankModal");
+  if (e.target === modal) hideRankModal();
+};
 
 // প্রথমবার বোর্ড রেন্ডার
 renderBoard();
