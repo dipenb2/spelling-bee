@@ -144,7 +144,7 @@ const puzzle = {
   center: "ক",
   letters: ["ম","ল","ত","ন","র","আ"],
   validWords: [
-    "কলম", "করাত", "কতল", "নরক", "কমল", "নরক", "রক্ত",
+    "কলম", "করাত", "কতল", "নরক", "কমল", "রক্ত",
     "কমলা",
     "কলতান",
     "করলা",
@@ -153,10 +153,17 @@ const puzzle = {
     "রকম",
     "কলা",
     "কান",
-    "রকম",
     "মকর",
     "কাল",
     "কলাম",
+    "রাম",
+    "তান",
+    "রাত",
+    "রতন",
+    "লতা",
+    "মরাল",
+    "আরাম",
+    "আমলা",
     "ক্লান্ত"
   ]
 };
@@ -278,7 +285,7 @@ const TOTAL_POSSIBLE = puzzle.validWords.reduce(
   (sum, w) => sum + scoreWord(w), 0
 );
 
-// আমাদের বাংলা র‍্যাঙ্ক সিস্টেম (নির্দিষ্ট স্কোরে)
+// আমাদের বাংলা র‍্যাঙ্ক সিস্টেম (স্থির স্কোর)
 const rankLevels = [
   { name: "শুরু",     minScore: 0 },
   { name: "বাহ্",     minScore: 1 },
@@ -294,7 +301,7 @@ function showRankModal() {
   const listEl = document.getElementById("rankList");
   const summaryEl = document.getElementById("rankSummary");
 
-  // বর্তমান র‍্যাঙ্ক বের করি (minScore অনুযায়ী)
+  // বর্তমান র‍্যাঙ্ক বের করি
   let currentRank = rankLevels[0];
   for (const lvl of rankLevels) {
     if (score >= lvl.minScore) currentRank = lvl;
@@ -302,7 +309,7 @@ function showRankModal() {
   const idx = rankLevels.indexOf(currentRank);
   const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
 
-  // Summary
+  // Summary টেক্সট
   let summary = `এই পাজলে মোট সম্ভব স্কোর ${TOTAL_POSSIBLE}। `;
   summary += `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
   if (nextRank) {
