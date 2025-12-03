@@ -73,6 +73,7 @@
 
 <div id="current"></div>
 <p>স্কোর: <span id="score">0</span></p>
+<p id="praise"></p>
 
 <button id="delete">মুছুন</button>
 <button id="shuffle">ঘোরান</button>
@@ -121,7 +122,8 @@ const AKAR_TILE = "আ";   // বাটনে যা দেখাচ্ছি
 const AKAR_SIGN = "া";   // আ-কার
 const HALANT   = "্";    // হসন্ত (virama)
 
-// যুক্তাক্ষরের ম্যাপ: ক+ল = ক্ল, ন+ত = ন্ত
+// যুক্তাক্ষরের ম্যাপ – শুধু বাটন চাপলে কাজ করবে
+// ক+ল = ক্ল, ন+ত = ন্ত
 const CONJUNCTS = {
   "ক+ল": "ক্ল",
   "ন+ত": "ন্ত"
@@ -206,6 +208,27 @@ function scoreWord(w) {
   return w.length;
 }
 
+function updatePraise() {
+  const p = document.getElementById("praise");
+  let msg = "";
+
+  if (score >= 40) {
+    msg = "অসাধারণ!";
+  } else if (score >= 30) {
+    msg = "চমৎকার!";
+  } else if (score >= 20) {
+    msg = "দারুণ!";
+  } else if (score >= 10) {
+    msg = "খুব ভালো!";
+  } else if (score >= 1) {
+    msg = "বাহ!";
+  } else {
+    msg = "";
+  }
+
+  p.textContent = msg;
+}
+
 // ---------- সাবমিট ----------
 function submitWord() {
   const w = current;
@@ -246,6 +269,7 @@ function submitWord() {
   found.push(w);
   score += scoreWord(w);
   document.getElementById("score").textContent = score;
+  updatePraise();
   document.getElementById("found").textContent = found.join(", ");
   clearCurrent("দারুণ! ✔");
 }
@@ -265,3 +289,4 @@ renderBoard();
 
 </body>
 </html>
+
