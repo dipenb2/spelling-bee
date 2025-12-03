@@ -100,6 +100,10 @@ const puzzle = {
     "রকম",
     "কলা",
     "কান",
+    "রকম", 
+    "মকর", 
+    "কাল",
+    "কলাম", 
     "রাম",
     "তান",
     "রাত",
@@ -169,6 +173,7 @@ function applyAkar() {
   current = current.slice(0, -1) + lastChar + AKAR_SIGN;
 }
 
+// যুক্তাক্ষর বাটন: শেষ দুই অক্ষর দেখে ক্ল / ন্ত বানায়
 function applyConjunctButton() {
   if (current.length < 2) {
     setMessage("কমপক্ষে দুটো বর্ণের পরে যুক্তাক্ষর লাগবে।");
@@ -208,25 +213,18 @@ function scoreWord(w) {
   return w.length;
 }
 
+function getPraiseForScore(s) {
+  if (s >= 40) return "অসাধারণ!";
+  if (s >= 30) return "চমৎকার!";
+  if (s >= 20) return "দারুণ!";
+  if (s >= 10) return "খুব ভালো!";
+  if (s >= 1)  return "বাহ!";
+  return "";
+}
+
 function updatePraise() {
   const p = document.getElementById("praise");
-  let msg = "";
-
-  if (score >= 40) {
-    msg = "অসাধারণ!";
-  } else if (score >= 30) {
-    msg = "চমৎকার!";
-  } else if (score >= 20) {
-    msg = "দারুণ!";
-  } else if (score >= 10) {
-    msg = "খুব ভালো!";
-  } else if (score >= 1) {
-    msg = "বাহ!";
-  } else {
-    msg = "";
-  }
-
-  p.textContent = msg;
+  p.textContent = getPraiseForScore(score);
 }
 
 // ---------- সাবমিট ----------
@@ -266,12 +264,15 @@ function submitWord() {
     return;
   }
 
+  // স্কোর আপডেট ও কমেন্ট
   found.push(w);
   score += scoreWord(w);
   document.getElementById("score").textContent = score;
   updatePraise();
   document.getElementById("found").textContent = found.join(", ");
-  clearCurrent("দারুণ! ✔");
+
+  const praise = getPraiseForScore(score);
+  clearCurrent(praise ? praise + " ✔" : "ঠিক আছে ✔");
 }
 
 // ---------- বাটন হ্যান্ডলার ----------
@@ -289,4 +290,3 @@ renderBoard();
 
 </body>
 </html>
-
