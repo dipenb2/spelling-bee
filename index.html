@@ -23,7 +23,7 @@
       line-height: 70px;
       border-radius: 15px;
       display: inline-block;
-      background: #eee;
+      background: #eeeeee;
       font-size: 32px;
       cursor: pointer;
       user-select: none;
@@ -58,7 +58,7 @@
     #message {
       min-height: 22px;
       margin-top: 6px;
-      color: #444;
+      color: #444444;
     }
   </style>
   <link rel="stylesheet"
@@ -85,10 +85,10 @@
 <div id="found"></div>
 
 <script>
-// --- পাজল সেটআপ ---
+// ---------- পাজল সেটআপ ----------
 const puzzle = {
   center: "ক",
-  letters: ["ম","ল","ত","ন","র","আ"],  // আ আছে, পরে আ-কার হবে
+  letters: ["ম","ল","ত","ন","র","আ"],
   validWords: [
     "কলম",
     "কমলা",
@@ -108,41 +108,36 @@ const puzzle = {
     "আরাম",
     "আমলা",
     "ক্লান্ত"
-    "মকর", 
-     "নরক", 
   ]
 };
 
-// --- গ্লোবাল স্টেট ---
+// ---------- গ্লোবাল স্টেট ----------
 let current = "";
 let score = 0;
 let found = [];
 
-// আ-কার ও যুক্তাক্ষর লজিক
-const AKAR_TILE = "আ";   // টাইল-এ যা দেখাচ্ছি
-const AKAR_SIGN = "া";   // আসল আ-কার (U+09BE)
+// আ-কার ও যুক্তাক্ষর
+const AKAR_TILE = "আ";   // বাটনে যা দেখাচ্ছি
+const AKAR_SIGN = "া";   // আ-কার
 const HALANT   = "্";    // হসন্ত (virama)
 
-// যুক্তাক্ষরের ম্যাপ – কেবল বাটন চাপলে কাজ করবে
-// ক+ল → ক্ল, ন+ত → ন্ত
+// যুক্তাক্ষরের ম্যাপ: ক+ল = ক্ল, ন+ত = ন্ত
 const CONJUNCTS = {
   "ক+ল": "ক্ল",
   "ন+ত": "ন্ত"
 };
 
-// --- বোর্ড আঁকা ---
+// ---------- বোর্ড আঁকা ----------
 function renderBoard() {
   const board = document.getElementById("board");
   board.innerHTML = "";
 
-  // center
   const centerDiv = document.createElement("div");
   centerDiv.className = "hex center";
   centerDiv.textContent = puzzle.center;
   centerDiv.onclick = () => addLetter(puzzle.center);
   board.appendChild(centerDiv);
 
-  // around letters
   puzzle.letters.forEach((ch, i) => {
     const div = document.createElement("div");
     div.className = "hex p" + i;
@@ -152,20 +147,19 @@ function renderBoard() {
   });
 }
 
-// --- অক্ষর যোগ ---
+// ---------- অক্ষর যোগ ----------
 function addLetter(ch) {
   if (ch === AKAR_TILE) {
-    applyAkar();     // আ চাপলে আ-কার বা "আ"
+    applyAkar();
   } else {
-    current += ch;   // অন্য সব অক্ষর সোজা যোগ
+    current += ch;
   }
-  document.getElementById("current").textContent = current;
+  updateCurrent();
 }
 
-// আ-কার প্রয়োগ: ক → কা, ল → লা, ক্ল → ক্লা, ন্ত → ন্তা ...
 function applyAkar() {
   if (!current) {
-    // একদম শুরুতে আ → "আ"
+    // শুরুতে আ → "আ"
     current += AKAR_TILE;
     return;
   }
@@ -173,30 +167,32 @@ function applyAkar() {
   current = current.slice(0, -1) + lastChar + AKAR_SIGN;
 }
 
-// যুক্তাক্ষর বাটন চাপলে – শেষ দুই অক্ষর দেখে যুক্তাক্ষর বানাই
 function applyConjunctButton() {
   if (current.length < 2) {
     setMessage("কমপক্ষে দুটো বর্ণের পরে যুক্তাক্ষর লাগবে।");
     return;
   }
+  const last = current[current.length - 1];
+  const prev = current[current.length - 2];
+  const key = prev + "+" + last;
 
-  const lastChar = current[current.length - 1];
-  const prevChar = current[current.length - 2];
-  const pair = prevChar + "+" + lastChar;
-
-  if (CONJUNCTS[pair]) {
-    current = current.slice(0, -2) + CONJUNCTS[pair];
-    document.getElementById("current").textContent = current;
+  if (CONJUNCTS[key]) {
+    current = current.slice(0, -2) + CONJUNCTS[key];
+    updateCurrent();
     setMessage("যুক্তাক্ষর লাগলো ✔");
   } else {
     setMessage("এই জায়গায় যুক্তাক্ষর লাগছে না।");
   }
 }
 
-// --- অন্য হেল্পার ---
+// ---------- হেল্পার ----------
+function updateCurrent() {
+  document.getElementById("current").textContent = current;
+}
+
 function clearCurrent(msg = "") {
   current = "";
-  document.getElementById("current").textContent = "";
+  updateCurrent();
   setMessage(msg);
 }
 
@@ -205,34 +201,30 @@ function setMessage(msg) {
 }
 
 function scoreWord(w) {
-  // ৩ অক্ষর = ১, ৪ = ২, ৫+ = দৈর্ঘ্য
   if (w.length === 3) return 1;
   if (w.length === 4) return 2;
   return w.length;
 }
 
-// --- সাবমিট ---
+// ---------- সাবমিট ----------
 function submitWord() {
   const w = current;
 
-  // মিনিমাম দৈর্ঘ্য
   if (w.length < 3) {
     clearCurrent("কমপক্ষে ৩ অক্ষর হতে হবে।");
     return;
   }
 
-  // মাঝের অক্ষর থাকতে হবে
   if (!w.includes(puzzle.center)) {
     clearCurrent("মাঝের অক্ষরটি থাকতে হবে!");
     return;
   }
 
-  // allowed অক্ষর চেক
   const allowed = new Set([puzzle.center, ...puzzle.letters]);
   if (allowed.has(AKAR_TILE)) {
-    allowed.add(AKAR_SIGN); // "া"
+    allowed.add(AKAR_SIGN);
   }
-  allowed.add(HALANT); // যুক্তাক্ষরের ভেতরে থাকে
+  allowed.add(HALANT);
 
   for (const ch of w) {
     if (!allowed.has(ch)) {
@@ -241,19 +233,16 @@ function submitWord() {
     }
   }
 
-  // ডিকশনারি চেক
   if (!puzzle.validWords.includes(w)) {
     clearCurrent("ডিকশনারিতে এই শব্দ নেই।");
     return;
   }
 
-  // ডুপ্লিকেট?
   if (found.includes(w)) {
     clearCurrent("এই শব্দটি আগেই পাওয়া হয়েছে।");
     return;
   }
 
-  // স্কোর আপডেট
   found.push(w);
   score += scoreWord(w);
   document.getElementById("score").textContent = score;
@@ -261,7 +250,7 @@ function submitWord() {
   clearCurrent("দারুণ! ✔");
 }
 
-// --- বাটন হ্যান্ডলার ---
+// ---------- বাটন হ্যান্ডলার ----------
 document.getElementById("delete").onclick = () => clearCurrent();
 document.getElementById("shuffle").onclick = () => {
   puzzle.letters.sort(() => Math.random() - 0.5);
