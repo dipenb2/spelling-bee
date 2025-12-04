@@ -145,9 +145,9 @@ const puzzle = {
   letters: ["ম","ল","ত","ন","র","আ"],
   validWords: [
     "কলম", "করাত", "কতল", "নরক", "কমল", "রক্ত",
-    "কমলা", "করতল", "করাল", "করতাল",  
-    "কলতান", "করলাম", "কলকল", "করল", "করা", 
-    "করলা", "করা", 
+    "কমলা", "করতল", "করাল", "করতাল",
+    "কলতান", "করলাম", "কলকল", "করল", "করা",
+    "করলা", "করা", "মাকাল", "নকল", "তালাক",
     "কালা",
     "কাম",
     "রকম",
@@ -267,6 +267,7 @@ function scoreWord(w) {
 }
 
 function getPraiseForScore(s) {
+  if (s >= 50) return "অদ্বিতীয়!";
   if (s >= 40) return "অসাধারণ!";
   if (s >= 30) return "চমৎকার!";
   if (s >= 20) return "দারুণ!";
@@ -280,19 +281,15 @@ function updatePraise() {
   p.textContent = getPraiseForScore(score);
 }
 
-// মোট সম্ভব স্কোর (শুধু তথ্যের জন্য)
-const TOTAL_POSSIBLE = puzzle.validWords.reduce(
-  (sum, w) => sum + scoreWord(w), 0
-);
-
 // আমাদের বাংলা র‍্যাঙ্ক সিস্টেম (স্থির স্কোর)
 const rankLevels = [
-  { name: "শুরু",     minScore: 0 },
-  { name: "বাহ্",     minScore: 1 },
-  { name: "খুব ভালো", minScore: 10 },
-  { name: "দারুণ",    minScore: 20 },
-  { name: "চমৎকার",  minScore: 30 },
-  { name: "অসাধারণ", minScore: 40 }
+  { name: "শুরু",       minScore: 0 },
+  { name: "বাহ্",       minScore: 1 },
+  { name: "খুব ভালো",   minScore: 10 },
+  { name: "দারুণ",      minScore: 20 },
+  { name: "চমৎকার",    minScore: 30 },
+  { name: "অসাধারণ",   minScore: 40 },
+  { name: "অদ্বিতীয়", minScore: 50 }
 ];
 
 // ---------- র‍্যাঙ্ক মডাল ----------
@@ -309,9 +306,8 @@ function showRankModal() {
   const idx = rankLevels.indexOf(currentRank);
   const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
 
-  // Summary টেক্সট
-  let summary = `এই পাজলে মোট সম্ভব স্কোর ${TOTAL_POSSIBLE}। `;
-  summary += `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
+  // Summary টেক্সট (এখানে আর মোট স্কোর দেখাচ্ছি না)
+  let summary = `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
   if (nextRank) {
     const diff = Math.max(0, nextRank.minScore - score);
     summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে ন্যূনতম ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
@@ -320,7 +316,7 @@ function showRankModal() {
   }
   summaryEl.textContent = summary;
 
-  // তালিকা (উপর থেকে নিচে: অসাধারণ → শুরু)
+  // তালিকা (উপর থেকে নিচে: অদ্বিতীয় → শুরু)
   listEl.innerHTML = "";
   const desc = [...rankLevels].reverse();
   desc.forEach(lvl => {
