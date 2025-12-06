@@ -1,70 +1,160 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <title>Bangla Spelling Bee</title>
+  <meta charset="UTF-8" />
+  <title>বাংলা Spelling Bee – ডেমো</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Bengali font -->
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap">
+
   <style>
     body {
       font-family: "Noto Sans Bengali", system-ui, sans-serif;
       text-align: center;
       margin: 0;
       padding: 20px;
+      background: #fdfaf3;
+      color: #222222;
     }
+
+    .game-container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    p.subtitle {
+      margin-top: 0;
+      font-size: 14px;
+      color: #555555;
+    }
+
     .board {
       position: relative;
       width: 260px;
       height: 260px;
-      margin: 40px auto;
+      margin: 20px auto 10px auto;
     }
+
     .hex {
       position: absolute;
       width: 70px;
       height: 70px;
       line-height: 70px;
-      border-radius: 15px;
+      border-radius: 20px;
       display: inline-block;
-      background: #eeeeee;
+      background: #f1f3f5;
       font-size: 32px;
       cursor: pointer;
       user-select: none;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.06);
     }
+    .hex:hover {
+      background: #e9ecef;
+    }
+
     .center {
-      background: #ffd400;
+      background: #ffd54f;
       left: 95px; top: 95px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-    .hex.p0 { left: 95px; top: 20px; }
+
+    .hex.p0 { left: 95px;  top: 20px; }
     .hex.p1 { left: 175px; top: 65px; }
     .hex.p2 { left: 175px; top: 155px; }
-    .hex.p3 { left: 95px; top: 200px; }
-    .hex.p4 { left: 15px; top: 155px; }
-    .hex.p5 { left: 15px; top: 65px; }
+    .hex.p3 { left: 95px;  top: 200px; }
+    .hex.p4 { left: 15px;  top: 155px; }
+    .hex.p5 { left: 15px;  top: 65px; }
 
     #current {
       font-size: 28px;
-      margin: 10px 0;
+      margin: 6px 0;
       min-height: 32px;
     }
+
+    #scoreLine {
+      display: inline-block;
+      margin: 4px 0 2px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: #ffeaa7;
+      border: 1px solid #f6b93b;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    #scoreLine:hover {
+      background: #ffd15c;
+      transform: translateY(-1px);
+    }
+
+    #praise {
+      margin: 2px 0 8px;
+      font-weight: 600;
+      color: #444444;
+    }
+
+    .controls {
+      margin-top: 4px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     button {
-      margin: 5px;
-      padding: 6px 10px;
+      margin: 0;
+      padding: 6px 12px;
       font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid #adb5bd;
+      background: #ffffff;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
     }
-    #found {
-      max-width: 320px;
-      margin: 15px auto;
-      text-align: left;
-      font-size: 16px;
+
+    button:hover {
+      background: #f1f3f5;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
     }
+
     #message {
       min-height: 22px;
       margin-top: 6px;
       color: #444444;
-    }
-    #scoreLine {
-      cursor: pointer;
+      font-size: 14px;
     }
 
-    /* --- Rank modal --- */
+    .found-box {
+      max-width: 480px;
+      margin: 12px auto 0 auto;
+      text-align: left;
+      font-size: 15px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .found-box h3 {
+      margin-top: 0;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+    #found {
+      margin-top: 4px;
+      word-wrap: break-word;
+    }
+
+    /* --- Rank & Help modals --- */
     .modal {
       display: none;
       position: fixed;
@@ -84,13 +174,16 @@
       text-align: left;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       font-size: 14px;
+      position: relative;
     }
     .modal-content h3 {
       margin-top: 0;
       text-align: center;
     }
     .close {
-      float: right;
+      position: absolute;
+      top: 10px;
+      right: 14px;
       font-size: 22px;
       font-weight: bold;
       cursor: pointer;
@@ -104,305 +197,334 @@
       margin: 4px 0;
     }
   </style>
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap">
 </head>
 <body>
 
-<h2>বাংলা Spelling Bee – ডেমো</h2>
-<p>শব্দ বানাও – মাঝের অক্ষরটি অবশ্যই ব্যবহার করে কমপক্ষে ৩ অক্ষরের শব্দ বানাতে হবে।</p>
+  <div class="game-container">
+    <h2>বাংলা Spelling Bee – ডেমো</h2>
+    <p class="subtitle">শব্দ বানাও – মাঝের অক্ষরটি অবশ্যই ব্যবহার করে কমপক্ষে ৩ অক্ষরের শব্দ বানাতে হবে।</p>
 
-<div class="board" id="board"></div>
+    <div class="board" id="board"></div>
 
-<div id="current"></div>
-<p id="scoreLine">স্কোর: <span id="score">0</span></p>
-<p id="praise"></p>
+    <div id="current"></div>
 
-<button id="delete">মুছুন</button>
-<button id="shuffle">ঘোরান</button>
-<button id="enter">এন্টার</button>
-<button id="conjunct">যুক্তাক্ষর</button>
+    <p id="scoreLine">স্কোর: <span id="score">0</span></p>
+    <p id="praise"></p>
 
-<div id="message"></div>
+    <div class="controls">
+      <button id="delete">মুছুন</button>
+      <button id="shuffle">ঘোরান</button>
+      <button id="enter">এন্টার</button>
+      <button id="conjunct">যুক্তাক্ষর</button>
+      <button id="helpRules">নিয়ম</button>
+    </div>
 
-<h3>আপনি যেগুলো পেয়েছেন:</h3>
-<div id="found"></div>
+    <div id="message"></div>
 
-<!-- Rank Modal -->
-<div id="rankModal" class="modal">
-  <div class="modal-content">
-    <span id="rankClose" class="close">&times;</span>
-    <h3>Rankings</h3>
-    <p id="rankSummary"></p>
-    <ul id="rankList"></ul>
+    <div class="found-box">
+      <h3>আপনি যেগুলো পেয়েছেন:</h3>
+      <div id="found"></div>
+    </div>
   </div>
-</div>
 
-<script>
-// ---------- পাজল সেটআপ ----------
-const puzzle = {
-  center: "ক",
-  letters: ["ম","ল","ত","ন","র","আ"],
-  validWords: [
-    "কলম", "করাত", "কতল", "নরক", "কমল", "রক্ত",
-    "কমলা", "করতল", "করাল", "করতাল",
-    "কলতান", "করলাম", "কলকল", "করল", "করা",
-    "করলা", "করা", "মাকাল", "নকল", "তালাক",
-    "কালা",
-    "কাম",
-    "রকম",
-    "কলা",
-    "কান",
-    "মকর",
-    "কাল",
-    "কলাম",
-    "রাম",
-    "তান",
-    "রাত",
-    "রতন",
-    "লতা",
-    "মরাল",
-    "আরাম",
-    "আমলা",
-    "ক্লান্ত"
-  ]
-};
+  <!-- Rank Modal -->
+  <div id="rankModal" class="modal">
+    <div class="modal-content">
+      <span id="rankClose" class="close">&times;</span>
+      <h3>Rankings</h3>
+      <p id="rankSummary"></p>
+      <ul id="rankList"></ul>
+    </div>
+  </div>
 
-// ---------- গ্লোবাল স্টেট ----------
-let current = "";
-let score = 0;
-let found = [];
+  <!-- Help / rules Modal -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span id="helpClose" class="close">&times;</span>
+      <h3>খেলার নিয়ম (সংক্ষিপ্ত)</h3>
+      <p>১. যে শব্দ বানাবে তাতে অবশ্যই মাঝখানের হলুদ ঘরের অক্ষর <strong>“ক”</strong> থাকতে হবে।</p>
+      <p>২. কমপক্ষে <strong>৩ অক্ষর</strong>ের শব্দ বানাতে হবে।</p>
+      <p>৩. “আ” বাটন চাপলে আগে লেখা বর্ণে <strong>আ-কার</strong> বসে:</p>
+      <ul>
+        <li>ক + আ → <strong>কা</strong></li>
+        <li>ল + আ → <strong>লা</strong></li>
+        <li>ন + আ → <strong>না</strong></li>
+      </ul>
+      <p>৪. “যুক্তাক্ষর” বাটন চাপলে শেষ দুই বর্ণ মিলে যুক্তাক্ষর হয় (যদি থাকে):</p>
+      <ul>
+        <li>ক + ল + “যুক্তাক্ষর” → <strong>ক্ল</strong> (যেমন <strong>ক্লান্ত</strong>)</li>
+        <li>ন + ত + “যুক্তাক্ষর” → <strong>ন্ত</strong> (যেমন <strong>রক্ত</strong>)</li>
+        <li>ক + ত + “যুক্তাক্ষর” → <strong>ক্ত</strong> (যেমন <strong>তক্তা</strong>)</li>
+        <li>র + ক + “যুক্তাক্ষর” → <strong>র্ক</strong> (যেমন <strong>তর্ক</strong>)</li>
+        <li>র + ত + “যুক্তাক্ষর” → <strong>র্ত</strong> (যেমন <strong>কর্তা</strong>)</li>
+      </ul>
+      <p>৫. স্কোরের ওপর চাপ দিলে আপনার বর্তমান র‌্যাঙ্ক দেখতে পাবেন।</p>
+    </div>
+  </div>
 
-// আ-কার ও যুক্তাক্ষর
-const AKAR_TILE = "আ";   // বাটনে যা দেখাচ্ছি
-const AKAR_SIGN = "া";   // আ-কার
-const HALANT   = "্";    // হসন্ত (virama)
+  <script>
+    // ---------- পাজল সেটআপ ----------
+    const puzzle = {
+      center: "ক",
+      letters: ["ম","ল","ত","ন","র","আ"],
+      validWords: [
+        "কলম", "করাত", "কতল", "নরক", "কমল", "রক্ত",
+        "কমলা", "করতল", "করাল", "করতাল",
+        "কলতান", "করলাম", "কলকল", "করল", "করা",
+        "করলা", "মাকাল", "নকল", "তালাক",
+        "কালা", "আকর", "তক্তা", "তর্ক", "কর্তা",
+        "কাম", "কতক", "করমল", "আরক", "আকলন",
+        "রকম", "রক্তকমল",
+        "কলা", "কান", "মকর", "কাল", "কলাম",
+        "রাম", "তান", "রাত", "রতন", "লতা",
+        "মরাল", "আরাম", "আমলা", "ক্লান্ত"
+      ]
+    };
 
-// যুক্তাক্ষরের ম্যাপ – শুধু বাটন চাপলে কাজ করবে
-// ক+ল = ক্ল, ন+ত = ন্ত, ক+ত = ক্ত
-const CONJUNCTS = {
-  "ক+ল": "ক্ল",
-  "ন+ত": "ন্ত",
-  "ক+ত": "ক্ত"
-};
+    // ---------- গ্লোবাল স্টেট ----------
+    let current = "";
+    let score = 0;
+    let found = [];
 
-// ---------- বোর্ড আঁকা ----------
-function renderBoard() {
-  const board = document.getElementById("board");
-  board.innerHTML = "";
+    // আ-কার ও যুক্তাক্ষর
+    const AKAR_TILE = "আ";   // বাটনে যা দেখাচ্ছি
+    const AKAR_SIGN = "া";   // আ-কার
+    const HALANT   = "্";    // হসন্ত (virama)
 
-  const centerDiv = document.createElement("div");
-  centerDiv.className = "hex center";
-  centerDiv.textContent = puzzle.center;
-  centerDiv.onclick = () => addLetter(puzzle.center);
-  board.appendChild(centerDiv);
+    // যুক্তাক্ষর ম্যাপ – শুধু বাটন চাপলে কাজ করবে
+    const CONJUNCTS = {
+      "ক+ল": "ক্ল",
+      "ন+ত": "ন্ত",
+      "ক+ত": "ক্ত",
+      "র+ক": "র্ক",
+      "র+ত": "র্ত"
+    };
 
-  puzzle.letters.forEach((ch, i) => {
-    const div = document.createElement("div");
-    div.className = "hex p" + i;
-    div.textContent = ch;
-    div.onclick = () => addLetter(ch);
-    board.appendChild(div);
-  });
-}
+    // ---------- বোর্ড আঁকা ----------
+    function renderBoard() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
 
-// ---------- অক্ষর যোগ ----------
-function addLetter(ch) {
-  if (ch === AKAR_TILE) {
-    applyAkar();
-  } else {
-    current += ch;
-  }
-  updateCurrent();
-}
+      const centerDiv = document.createElement("div");
+      centerDiv.className = "hex center";
+      centerDiv.textContent = puzzle.center;
+      centerDiv.onclick = () => addLetter(puzzle.center);
+      board.appendChild(centerDiv);
 
-function applyAkar() {
-  if (!current) {
-    // শুরুতে আ → "আ"
-    current += AKAR_TILE;
-    return;
-  }
-  const lastChar = current[current.length - 1];
-  current = current.slice(0, -1) + lastChar + AKAR_SIGN;
-}
-
-// যুক্তাক্ষর বাটন: শেষ দুই অক্ষর দেখে ক্ল / ন্ত / ক্ত বানায়
-function applyConjunctButton() {
-  if (current.length < 2) {
-    setMessage("কমপক্ষে দুটো বর্ণের পরে যুক্তাক্ষর লাগবে।");
-    return;
-  }
-  const last = current[current.length - 1];
-  const prev = current[current.length - 2];
-  const key = prev + "+" + last;
-
-  if (CONJUNCTS[key]) {
-    current = current.slice(0, -2) + CONJUNCTS[key];
-    updateCurrent();
-    setMessage("যুক্তাক্ষর লাগলো ✔");
-  } else {
-    setMessage("এই জায়গায় যুক্তাক্ষর লাগছে না।");
-  }
-}
-
-// ---------- হেল্পার ----------
-function updateCurrent() {
-  document.getElementById("current").textContent = current;
-}
-
-function clearCurrent(msg = "") {
-  current = "";
-  updateCurrent();
-  setMessage(msg);
-}
-
-function setMessage(msg) {
-  document.getElementById("message").textContent = msg;
-}
-
-function scoreWord(w) {
-  if (w.length === 3) return 1;
-  if (w.length === 4) return 2;
-  return w.length;
-}
-
-function getPraiseForScore(s) {
-  if (s >= 50) return "অদ্বিতীয়!";
-  if (s >= 40) return "অসাধারণ!";
-  if (s >= 30) return "চমৎকার!";
-  if (s >= 20) return "দারুণ!";
-  if (s >= 10) return "খুব ভালো!";
-  if (s >= 1)  return "বাহ!";
-  return "";
-}
-
-function updatePraise() {
-  const p = document.getElementById("praise");
-  p.textContent = getPraiseForScore(score);
-}
-
-// আমাদের বাংলা র‍্যাঙ্ক সিস্টেম (স্থির স্কোর)
-const rankLevels = [
-  { name: "শুরু",       minScore: 0 },
-  { name: "বাহ্",       minScore: 1 },
-  { name: "খুব ভালো",   minScore: 10 },
-  { name: "দারুণ",      minScore: 20 },
-  { name: "চমৎকার",    minScore: 30 },
-  { name: "অসাধারণ",   minScore: 40 },
-  { name: "অদ্বিতীয়", minScore: 50 }
-];
-
-// ---------- র‍্যাঙ্ক মডাল ----------
-function showRankModal() {
-  const modal = document.getElementById("rankModal");
-  const listEl = document.getElementById("rankList");
-  const summaryEl = document.getElementById("rankSummary");
-
-  // বর্তমান র‍্যাঙ্ক বের করি
-  let currentRank = rankLevels[0];
-  for (const lvl of rankLevels) {
-    if (score >= lvl.minScore) currentRank = lvl;
-  }
-  const idx = rankLevels.indexOf(currentRank);
-  const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
-
-  // Summary টেক্সট (এখানে আর মোট স্কোর দেখাচ্ছি না)
-  let summary = `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
-  if (nextRank) {
-    const diff = Math.max(0, nextRank.minScore - score);
-    summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে ন্যূনতম ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
-  } else {
-    summary += ` আপনি ইতিমধ্যে সর্বোচ্চ র‍্যাঙ্কে আছেন!`;
-  }
-  summaryEl.textContent = summary;
-
-  // তালিকা (উপর থেকে নিচে: অদ্বিতীয় → শুরু)
-  listEl.innerHTML = "";
-  const desc = [...rankLevels].reverse();
-  desc.forEach(lvl => {
-    const li = document.createElement("li");
-    li.textContent = `${lvl.name} — ন্যূনতম ${lvl.minScore} পয়েন্ট`;
-    if (lvl.name === currentRank.name) {
-      li.style.fontWeight = "bold";
+      puzzle.letters.forEach((ch, i) => {
+        const div = document.createElement("div");
+        div.className = "hex p" + i;
+        div.textContent = ch;
+        div.onclick = () => addLetter(ch);
+        board.appendChild(div);
+      });
     }
-    listEl.appendChild(li);
-  });
 
-  modal.style.display = "block";
-}
-
-function hideRankModal() {
-  document.getElementById("rankModal").style.display = "none";
-}
-
-// ---------- সাবমিট ----------
-function submitWord() {
-  const w = current;
-
-  if (w.length < 3) {
-    clearCurrent("কমপক্ষে ৩ অক্ষর হতে হবে।");
-    return;
-  }
-
-  if (!w.includes(puzzle.center)) {
-    clearCurrent("মাঝের অক্ষরটি থাকতে হবে!");
-    return;
-  }
-
-  const allowed = new Set([puzzle.center, ...puzzle.letters]);
-  if (allowed.has(AKAR_TILE)) {
-    allowed.add(AKAR_SIGN);
-  }
-  allowed.add(HALANT);
-
-  for (const ch of w) {
-    if (!allowed.has(ch)) {
-      clearCurrent("এই অক্ষর ব্যবহার করা যাবে না: " + ch);
-      return;
+    // ---------- অক্ষর যোগ ----------
+    function addLetter(ch) {
+      if (ch === AKAR_TILE) {
+        applyAkar();
+      } else {
+        current += ch;
+      }
+      updateCurrent();
     }
-  }
 
-  if (!puzzle.validWords.includes(w)) {
-    clearCurrent("ডিকশনারিতে এই শব্দ নেই।");
-    return;
-  }
+    function applyAkar() {
+      if (!current) {
+        current += AKAR_TILE;
+        return;
+      }
+      const lastChar = current[current.length - 1];
+      current = current.slice(0, -1) + lastChar + AKAR_SIGN;
+    }
 
-  if (found.includes(w)) {
-    clearCurrent("এই শব্দটি আগেই পাওয়া হয়েছে।");
-    return;
-  }
+    // যুক্তাক্ষর বাটন: শেষ দুই অক্ষর দেখে ক্ল / ন্ত / ক্ত / র্ক / র্ত বানায়
+    function applyConjunctButton() {
+      if (current.length < 2) {
+        setMessage("কমপক্ষে দুটো বর্ণের পরে যুক্তাক্ষর লাগবে।");
+        return;
+      }
+      const last = current[current.length - 1];
+      const prev = current[current.length - 2];
+      const key = prev + "+" + last;
 
-  // স্কোর আপডেট ও কমেন্ট
-  found.push(w);
-  score += scoreWord(w);
-  document.getElementById("score").textContent = score;
-  updatePraise();
-  document.getElementById("found").textContent = found.join(", ");
+      if (CONJUNCTS[key]) {
+        current = current.slice(0, -2) + CONJUNCTS[key];
+        updateCurrent();
+        setMessage("যুক্তাক্ষর লাগলো ✔");
+      } else {
+        setMessage("এই জায়গায় যুক্তাক্ষর লাগছে না।");
+      }
+    }
 
-  const praise = getPraiseForScore(score);
-  clearCurrent(praise ? praise + " ✔" : "ঠিক আছে ✔");
-}
+    // ---------- হেল্পার ----------
+    function updateCurrent() {
+      document.getElementById("current").textContent = current;
+    }
 
-// ---------- বাটন হ্যান্ডলার ----------
-document.getElementById("delete").onclick = () => clearCurrent();
-document.getElementById("shuffle").onclick = () => {
-  puzzle.letters.sort(() => Math.random() - 0.5);
-  renderBoard();
-};
-document.getElementById("enter").onclick = submitWord;
-document.getElementById("conjunct").onclick = applyConjunctButton;
+    function clearCurrent(msg = "") {
+      current = "";
+      updateCurrent();
+      setMessage(msg);
+    }
 
-// স্কোর লাইনে ক্লিক করলে র‍্যাঙ্ক মডাল
-document.getElementById("scoreLine").onclick = showRankModal;
-document.getElementById("rankClose").onclick = hideRankModal;
-window.onclick = function(e) {
-  const modal = document.getElementById("rankModal");
-  if (e.target === modal) hideRankModal();
-};
+    function setMessage(msg) {
+      document.getElementById("message").textContent = msg;
+    }
 
-// প্রথমবার বোর্ড রেন্ডার
-renderBoard();
-</script>
+    function scoreWord(w) {
+      if (w.length === 3) return 1;
+      if (w.length === 4) return 2;
+      return w.length;
+    }
 
+    function getPraiseForScore(s) {
+      if (s >= 50) return "অদ্বিতীয়!";
+      if (s >= 40) return "অসাধারণ!";
+      if (s >= 30) return "চমৎকার!";
+      if (s >= 20) return "দারুণ!";
+      if (s >= 10) return "খুব ভালো!";
+      if (s >= 1)  return "বাহ!";
+      return "";
+    }
+
+    function updatePraise() {
+      const p = document.getElementById("praise");
+      p.textContent = getPraiseForScore(score);
+    }
+
+    // বাংলা র‌্যাঙ্ক সিস্টেম
+    const rankLevels = [
+      { name: "শুরু",       minScore: 0 },
+      { name: "বাহ্",       minScore: 1 },
+      { name: "খুব ভালো",   minScore: 10 },
+      { name: "দারুণ",      minScore: 20 },
+      { name: "চমৎকার",    minScore: 30 },
+      { name: "অসাধারণ",   minScore: 40 },
+      { name: "অদ্বিতীয়", minScore: 50 }
+    ];
+
+    // ---------- র‌্যাঙ্ক মডাল ----------
+    function showRankModal() {
+      const modal = document.getElementById("rankModal");
+      const listEl = document.getElementById("rankList");
+      const summaryEl = document.getElementById("rankSummary");
+
+      let currentRank = rankLevels[0];
+      for (const lvl of rankLevels) {
+        if (score >= lvl.minScore) currentRank = lvl;
+      }
+      const idx = rankLevels.indexOf(currentRank);
+      const nextRank = (idx + 1 < rankLevels.length) ? rankLevels[idx + 1] : null;
+
+      let summary = `আপনার বর্তমান র‍্যাঙ্ক: ${currentRank.name} (${score} পয়েন্ট)।`;
+      if (nextRank) {
+        const diff = Math.max(0, nextRank.minScore - score);
+        summary += ` পরের র‍্যাঙ্ক “${nextRank.name}” পেতে ন্যূনতম ${nextRank.minScore} পয়েন্ট, অর্থাৎ আরও ${diff} পয়েন্ট প্রয়োজন।`;
+      } else {
+        summary += ` আপনি ইতিমধ্যে সর্বোচ্চ র‍্যাঙ্কে আছেন!`;
+      }
+      summaryEl.textContent = summary;
+
+      listEl.innerHTML = "";
+      const desc = [...rankLevels].reverse();
+      desc.forEach(lvl => {
+        const li = document.createElement("li");
+        li.textContent = `${lvl.name} — ন্যূনতম ${lvl.minScore} পয়েন্ট`;
+        if (lvl.name === currentRank.name) {
+          li.style.fontWeight = "bold";
+        }
+        listEl.appendChild(li);
+      });
+
+      modal.style.display = "block";
+    }
+
+    function hideRankModal() {
+      document.getElementById("rankModal").style.display = "none";
+    }
+
+    // ---------- Help modal ----------
+    function showHelpModal() {
+      document.getElementById("helpModal").style.display = "block";
+    }
+    function hideHelpModal() {
+      document.getElementById("helpModal").style.display = "none";
+    }
+
+    // ---------- সাবমিট ----------
+    function submitWord() {
+      const w = current;
+
+      if (w.length < 3) {
+        clearCurrent("কমপক্ষে ৩ অক্ষর হতে হবে।");
+        return;
+      }
+
+      if (!w.includes(puzzle.center)) {
+        clearCurrent("মাঝের অক্ষরটি থাকতে হবে!");
+        return;
+      }
+
+      const allowed = new Set([puzzle.center, ...puzzle.letters]);
+      if (allowed.has(AKAR_TILE)) {
+        allowed.add(AKAR_SIGN);
+      }
+      allowed.add(HALANT);
+
+      for (const ch of w) {
+        if (!allowed.has(ch)) {
+          clearCurrent("এই অক্ষর ব্যবহার করা যাবে না: " + ch);
+          return;
+        }
+      }
+
+      if (!puzzle.validWords.includes(w)) {
+        clearCurrent("ডিকশনারিতে এই শব্দ নেই।");
+        return;
+      }
+
+      if (found.includes(w)) {
+        clearCurrent("এই শব্দটি আগেই পাওয়া হয়েছে।");
+        return;
+      }
+
+      found.push(w);
+      score += scoreWord(w);
+      document.getElementById("score").textContent = score;
+      updatePraise();
+      document.getElementById("found").textContent = found.join(", ");
+
+      const praise = getPraiseForScore(score);
+      clearCurrent(praise ? praise + " ✔" : "ঠিক আছে ✔");
+    }
+
+    // ---------- বাটন হ্যান্ডলার ----------
+    document.getElementById("delete").onclick = () => clearCurrent();
+    document.getElementById("shuffle").onclick = () => {
+      puzzle.letters.sort(() => Math.random() - 0.5);
+      renderBoard();
+    };
+    document.getElementById("enter").onclick = submitWord;
+    document.getElementById("conjunct").onclick = applyConjunctButton;
+
+    document.getElementById("scoreLine").onclick = showRankModal;
+    document.getElementById("rankClose").onclick = hideRankModal;
+
+    document.getElementById("helpRules").onclick = showHelpModal;
+    document.getElementById("helpClose").onclick = hideHelpModal;
+
+    // Modal–এর বাইরে ক্লিক করলে বন্ধ
+    window.onclick = function(e) {
+      const rankModal = document.getElementById("rankModal");
+      const helpModal = document.getElementById("helpModal");
+      if (e.target === rankModal) hideRankModal();
+      if (e.target === helpModal) hideHelpModal();
+    };
+
+    // প্রথমবার বোর্ড রেন্ডার
+    renderBoard();
+  </script>
 </body>
 </html>
